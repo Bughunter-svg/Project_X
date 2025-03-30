@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="Client.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatConnect - Real-time Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            overflow: hidden;
+            background-color: #0a0e17;
+            color: white;
+        }
+        
+        .welcome-container {
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            transition: opacity 0.8s ease;
+        }
+        
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+        
+        .logo {
+            font-size: 3.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #61dafb;
+            text-shadow: 0 0 10px rgba(97, 218, 251, 0.5);
+            transition: transform 0.3s ease;
+        }
+        
+        .tagline {
+            font-size: 1.2rem;
+            margin-bottom: 3rem;
+            text-align: center;
+            color: #c5c5c5;
+            max-width: 600px;
+            transition: transform 0.3s ease;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-btn {
+            background-color: #61dafb;
+            color: #0a0e17;
+        }
+        
+        .signup-btn {
+            background-color: transparent;
+            color: #61dafb;
+            border: 2px solid #61dafb;
+        }
+        
+        .button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 15px rgba(97, 218, 251, 0.3);
+        }
+        
+        .button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            opacity: 0;
+            transition: transform 0.5s, opacity 0.5s;
+        }
+        
+        .button:active::after {
+            transform: translate(-50%, -50%) scale(2);
+            opacity: 0;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s;
+        }
+        
+        .modal-content {
+            background: rgba(20, 29, 47, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 40px;
+            width: 90%;
+            max-width: 450px;
+            transform: translateY(30px);
+            transition: transform 0.5s ease;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(97, 218, 251, 0.2);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            margin-bottom: 25px;
+        }
+        
+        .modal-header h2 {
+            color: #61dafb;
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+        
+        .modal-header p {
+            color: #a8a8a8;
+            font-size: 0.9rem;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #e0e0e0;
+            font-size: 0.9rem;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #61dafb;
+        }
+        
+        .input-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .input-tab {
+            flex: 1;
+            padding: 10px 15px;
+            background: none;
+            border: none;
+            color: #a8a8a8;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            text-align: center;
+        }
+        
+        .input-tab.active {
+            color: #61dafb;
+        }
+        
+        .input-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: #61dafb;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #61dafb;
+            color: #0a0e17;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .submit-btn:hover {
+            background-color: #4ac8ea;
+            transform: translateY(-2px);
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #a8a8a8;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .close-btn:hover {
+            color: #61dafb;
+        }
+        
+        .switch-form {
+            margin-top: 20px;
+            text-align: center;
+            color: #a8a8a8;
+            font-size: 0.9rem;
+        }
+        
+        .switch-form a {
+            color: #61dafb;
+            text-decoration: none;
+            margin-left: 5px;
+            transition: color 0.3s ease;
+        }
+        
+        .switch-form a:hover {
+            text-decoration: underline;
+        }
+        
+        .helper-text {
+            font-size: 0.8rem;
+            color: #61dafb;
+            margin-top: 5px;
+        }
+        
+        .password-match-indicator {
+            font-size: 0.8rem;
+            margin-top: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .password-match-indicator.match {
+            color: #4CAF50;
+        }
+        
+        .password-match-indicator.no-match {
+            color: #F44336;
+        }
+        
+        /* Form specific styling */
+        #login-form {
+            display: block;
+        }
+        
+        #signup-form {
+            display: block;
+        }
+        
+        /* Redirect overlay */
+        .redirect-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(10, 14, 23, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s;
+        }
+        
+        .redirect-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(97, 218, 251, 0.2);
+            border-top: 5px solid #61dafb;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+        
+        .redirect-message {
+            color: #e0e0e0;
+            font-size: 1.2rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="welcome-container">
+        <div class="background">
+            <div class="particles" id="particles"></div>
+        </div>
+        
+        <h1 class="logo" id="logo">ChatConnect</h1>
+        <p class="tagline" id="tagline">Experience real-time conversations with friends and colleagues in a secure and intuitive environment.</p>
+        
+        <div class="buttons">
+            <button class="button login-btn" id="show-login">Log In</button>
+            <button class="button signup-btn" id="show-signup">Sign Up</button>
+        </div>
+    </div>
+    
+    <!-- Login Modal -->
+    <div class="modal" id="login-modal">
+        <div class="modal-content">
+            <button class="close-btn" id="close-login">&times;</button>
+            <div class="modal-header">
+                <h2>Welcome Back</h2>
+                <p>Sign in to continue your conversations</p>
+            </div>
+            
+            <form id="login-form">
+                <div class="input-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" required>
+                </div>
+                <div class="input-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required>
+                </div>
+                <button type="submit" class="submit-btn">Log In</button>
+                <div class="switch-form">
+                    Don't have an account?<a href="#" id="switch-to-signup">Sign up</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Signup Modal -->
+    <div class="modal" id="signup-modal">
+        <div class="modal-content">
+            <button class="close-btn" id="close-signup">&times;</button>
+            <div class="modal-header">
+                <h2>Create Account</h2>
+                <p>Join our community and start chatting</p>
+            </div>
+            
+            <form id="signup-form">
+                <div class="input-group">
+                    <label for="signup-username">Username</label>
+                    <input type="text" id="signup-username" required placeholder="Choose a username">
+                    <div class="helper-text">This name will be visible to other chatters</div>
+                </div>
+
+                <div class="input-tabs">
+                    <button type="button" class="input-tab active" id="email-tab">Gmail</button>
+                    <button type="button" class="input-tab" id="phone-tab">Phone Number</button>
+                </div>
+                
+                <div class="tab-content active" id="email-content">
+                    <div class="input-group">
+                        <label for="signup-email">Gmail Address</label>
+                        <input type="email" id="signup-email" placeholder="your.email@gmail.com" required>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="phone-content">
+                    <div class="input-group">
+                        <label for="signup-phone">Phone Number</label>
+                        <input type="tel" id="signup-phone" placeholder="+1 (123) 456-7890" required>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="signup-password">Password</label>
+                    <input type="password" id="signup-password" required placeholder="Create a strong password">
+                </div>
+                
+                <div class="input-group">
+                    <label for="signup-confirm-password">Confirm Password</label>
+                    <input type="password" id="signup-confirm-password" required placeholder="Confirm your password">
+                    <div id="password-match" class="password-match-indicator"></div>
+                </div>
+                
+                <button type="submit" class="submit-btn" id="signup-submit">Sign Up</button>
+                <div class="switch-form">
+                    Already have an account?<a href="#" id="switch-to-login">Log in</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Redirect Overlay -->
+    <div class="redirect-overlay" id="redirect-overlay">
+        <div class="spinner"></div>
+        <p class="redirect-message">Connecting to chat...</p>
+    </div>
+
+    <script>
+        // Create background particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // Random size between 2px and 6px
+                const size = Math.random() * 4 + 2;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                // Random position
+                const posX = Math.random() * 100;
+                const posY = Math.random() * 100;
+                particle.style.left = `${posX}%`;
+                particle.style.top = `${posY}%`;
+                
+                // Random opacity
+                particle.style.opacity = Math.random() * 0.5 + 0.1;
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+        
+        // Track cursor movement and animate particles
+        function setupCursorTracking() {
+            const container = document.querySelector('.welcome-container');
+            const logo = document.getElementById('logo');
+            const tagline = document.getElementById('tagline');
+            const particles = document.querySelectorAll('.particle');
+            
+            document.addEventListener('mousemove', (e) => {
+                // Calculate mouse position relative to the center
+                const x = (e.clientX / window.innerWidth) - 0.5;
+                const y = (e.clientY / window.innerHeight) - 0.5;
+                
+                // Animate logo and tagline
+                logo.style.transform = `translate(${x * 20}px, ${y * 20}px)`;
+                tagline.style.transform = `translate(${x * 15}px, ${y * 15}px)`;
+                
+                // Animate each particle
+                particles.forEach(particle => {
+                    const speed = parseFloat(particle.style.width) / 6;
+                    particle.style.transform = `translate(${x * 50 * speed}px, ${y * 50 * speed}px)`;
+                });
+            });
+        }
+        
+        // Modal functionality
+        function setupModals() {
+            const background = document.querySelector('.background');
+            const loginModal = document.getElementById('login-modal');
+            const signupModal = document.getElementById('signup-modal');
+            const showLoginBtn = document.getElementById('show-login');
+            const showSignupBtn = document.getElementById('show-signup');
+            const closeLoginBtn = document.getElementById('close-login');
+            const closeSignupBtn = document.getElementById('close-signup');
+            const switchToSignup = document.getElementById('switch-to-signup');
+            const switchToLogin = document.getElementById('switch-to-login');
+            
+            function showModal(modal) {
+                background.style.opacity = 0.3;
+                modal.classList.add('active');
+            }
+            
+            function hideModals() {
+                background.style.opacity = 1;
+                loginModal.classList.remove('active');
+                signupModal.classList.remove('active');
+            }
+            
+            showLoginBtn.addEventListener('click', () => showModal(loginModal));
+            showSignupBtn.addEventListener('click', () => showModal(signupModal));
+            closeLoginBtn.addEventListener('click', hideModals);
+            closeSignupBtn.addEventListener('click', hideModals);
+            
+            switchToSignup.addEventListener('click', (e) => {
+                e.preventDefault();
+                loginModal.classList.remove('active');
+                setTimeout(() => {
+                    signupModal.classList.add('active');
+                }, 300);
+            });
+            
+            switchToLogin.addEventListener('click', (e) => {
+                e.preventDefault();
+                signupModal.classList.remove('active');
+                setTimeout(() => {
+                    loginModal.classList.add('active');
+                }, 300);
+            });
+            
+            // Close modal when clicking outside
+            window.addEventListener('click', (e) => {
+                if (e.target === loginModal || e.target === signupModal) {
+                    hideModals();
+                }
+            });
+        }
+        
+        // Setup tabs for email/phone input in signup
+        function setupTabs() {
+            const emailTab = document.getElementById('email-tab');
+            const phoneTab = document.getElementById('phone-tab');
+            const emailContent = document.getElementById('email-content');
+            const phoneContent = document.getElementById('phone-content');
+            
+            emailTab.addEventListener('click', () => {
+                emailTab.classList.add('active');
+                phoneTab.classList.remove('active');
+                emailContent.classList.add('active');
+                phoneContent.classList.remove('active');
+                // Clear phone field when switching to email
+                document.getElementById('signup-phone').value = '';
+                // Make email required and phone not required
+                document.getElementById('signup-email').setAttribute('required', '');
+                document.getElementById('signup-phone').removeAttribute('required');
+            });
+            
+            phoneTab.addEventListener('click', () => {
+                phoneTab.classList.add('active');
+                emailTab.classList.remove('active');
+                phoneContent.classList.add('active');
+                emailContent.classList.remove('active');
+                // Clear email field when switching to phone
+                document.getElementById('signup-email').value = '';
+                // Make phone required and email not required
+                document.getElementById('signup-phone').setAttribute('required', '');
+                document.getElementById('signup-email').removeAttribute('required');
+            });
+        }
+        
+        // Setup password confirmation check
+        function setupPasswordConfirmation() {
+            const password = document.getElementById('signup-password');
+            const confirmPassword = document.getElementById('signup-confirm-password');
+            const passwordMatch = document.getElementById('password-match');
+            const signupSubmit = document.getElementById('signup-submit');
+            
+            function checkPasswordMatch() {
+                if (confirmPassword.value === '') {
+                    passwordMatch.textContent = '';
+                    passwordMatch.classList.remove('match', 'no-match');
+                    return;
+                }
+                
+                if (password.value === confirmPassword.value) {
+                    passwordMatch.textContent = 'Passwords match';
+                    passwordMatch.classList.add('match');
+                    passwordMatch.classList.remove('no-match');
+                    signupSubmit.disabled = false;
+                } else {
+                    passwordMatch.textContent = 'Passwords do not match';
+                    passwordMatch.classList.add('no-match');
+                    passwordMatch.classList.remove('match');
+                    signupSubmit.disabled = true;
+                }
+            }
+            
+            password.addEventListener('input', checkPasswordMatch);
+            confirmPassword.addEventListener('input', checkPasswordMatch);
+        }
+        
+        // Handle form submissions
+        function setupFormSubmissions() {
+            const redirectOverlay = document.getElementById('redirect-overlay');
+            
+            // Login form submission
+            document.getElementById('login-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                // Show the redirect overlay
+                redirectOverlay.classList.add('active');
+                
+                // Simulate authentication and redirect to ChatConnect.html
+                setTimeout(() => {
+                    window.location.href = 'ChatConnect.html';
+                }, 1500);
+            });
+            
+            // Signup form submission
+            document.getElementById('signup-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                // Verify password match
+                const password = document.getElementById('signup-password').value;
+                const confirmPassword = document.getElementById('signup-confirm-password').value;
+                
+                if (password !== confirmPassword) {
+                    return;
+                }
+                
+                // Show the redirect overlay
+                redirectOverlay.classList.add('active');
+                
+                // Simulate account creation and redirect to ChatConnect.html
+                setTimeout(() => {
+                    window.location.href = 'ChatConnect.html';
+                }, 1500);
+            });
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            createParticles();
+            setupCursorTracking();
+            setupModals();
+            setupTabs();
+            setupPasswordConfirmation();
+            setupFormSubmissions();
+        });
+    </script>
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
+        
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyC_-jYlgm154jydh1MH1gybbk5KWnSBWDI",
+          authDomain: "chat-bot-80385.firebaseapp.com",
+          projectId: "chat-bot-80385",
+          storageBucket: "chat-bot-80385.firebasestorage.app",
+          messagingSenderId: "693115905837",
+          appId: "1:693115905837:web:fbb0fddfdbe3a71ba795a4"
+        };
+      
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+    </script>
+</body>
+</html>
